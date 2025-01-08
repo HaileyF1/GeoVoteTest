@@ -62,3 +62,18 @@ class ProfileView(APIView):
             "profile_errors": profile_errors,
             "address_errors": address_errors
         }, status=HTTP_400_BAD_REQUEST)
+        
+        
+class UserInfo(APIView): 
+    def get(self, request, *args, **kwargs):
+        try:
+            # Attempt to retrieve the profile for the authenticated user
+            profile = Profile.objects.get(user=request.user)
+            return Response({
+                "birth_date": profile.birth_date,
+                "address": profile.address,
+                # Add other fields you need from the profile
+            })
+        except Profile.DoesNotExist:
+            # If the profile doesn't exist, return a 404 response
+            return Response({"error": "Profile not found."}, status=HTTP_404_NOT_FOUND)

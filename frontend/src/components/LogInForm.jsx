@@ -2,8 +2,7 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { Container, FormControl } from '@mui/material';
-
+import { Container } from '@mui/material';
 import Typography from '@mui/material/Typography';
 
 import {logIn} from '../utilities';
@@ -34,32 +33,28 @@ const LogInForm = () => {
 };
 
 
-  const handleLogInClick = () => {
-    navigate('/home');
-  }
-
   return (
     <>
       <Container className='login-form'>
-        <FormControl onSubmit={(evt) => handleSubmit(evt)}>
         <h1>Log In</h1>
         <Box component='form'
+        onSubmit={handleSubmit}
           sx={{ width: '25ch' }}>
           <TextField 
             required
-            id='outline-required'
+            id='email'
             label='Email'
             type='email'
             value={email}
             onChange={(evt) => setEmail(evt.target.value)}/>
           <TextField 
             required
-            id='outline-required'
+            id='password'
             label='Password'
             type='password'
             value={password}
             onChange={(evt) => setPassword(evt.target.value)}/>
-        </Box>
+        
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Button
@@ -70,10 +65,10 @@ const LogInForm = () => {
           </Button>
 
           <Button variant='outlined'
-            onClick={handleLogInClick}>
+            type='submit'>
               Log In
             </Button>
-
+        
           <Typography sx={{ textAlign: 'center' }}>
             Don&apos;t have an account?{' '}
             <Link
@@ -83,8 +78,8 @@ const LogInForm = () => {
               Sign up
             </Link>
             </Typography>
+         </Box>   
         </Box>
-        </FormControl>
       </Container>  
     </>
   )

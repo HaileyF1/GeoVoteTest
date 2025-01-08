@@ -3,12 +3,13 @@ import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import "./MapTiler.css";
 
+
 export default function Map() {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const usa = { lng: -118.24, lat: 40.71 };
   const zoom = 14;
-  maptilersdk.config.apiKey = "mMj39F7ThXzLvZNBLlgW";
+  maptilersdk.config.apiKey = "";
 
   useEffect(() => {
     if (map.current) return; // stops map from intializing more than once

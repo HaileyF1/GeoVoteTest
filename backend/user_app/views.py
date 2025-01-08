@@ -49,7 +49,11 @@ class SignUp(APIView):
                 last_name=body_data["last_name"],
             )
             token = Token.objects.create(user=new_user)
-            return Response({"user": new_user.email, "token": token.key, "first_name": new_user.first_name, "last_name": new_user.last_name}, status=HTTP_201_CREATED)
+            return Response({"user": {
+                    "first_name": new_user.first_name,
+                    "last_name": new_user.last_name,
+                    "email": new_user.email,
+                    "id": new_user.id}, "token": token.key}, status=HTTP_201_CREATED)
         except ValueError as e:
             return Response(f"Value error: {e}", status=HTTP_400_BAD_REQUEST)
         except IntegrityError as e:
@@ -91,7 +95,17 @@ class LogOut(TokenReq):
         # Handling exceptions and returning an error response
         except Token.DoesNotExist:
             return Response(
-                {"error": "Token not found"}, status=HTTP_500_INTERNAL_SERVER_ERROR
-            )
+                {"error": "Token not found"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class Info(TokenReq): 
+    def get(self, request):
+        return Response(
+            {
+                "first_name": request.user.first_name, 
+                "last_name": request.user.last_name,
+                "email": request.user.email, 
+            })
