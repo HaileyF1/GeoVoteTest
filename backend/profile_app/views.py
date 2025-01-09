@@ -36,29 +36,40 @@ class ProfileView(APIView):
         try:
             if pk:
                 profile = Profile.objects.get(pk=pk, user=request.user)
-                address = Address.objects.get(pk=profile.address.pk, user=request.user)
+                address = Address.objects.filter(pk=profile.address.pk, user=request.user).first()
             else:
                 profile = Profile.objects.get(user=request.user)
-                address = Address.objects.get(user=request.user)
+                address = Address.objects.filter(user=request.user).first()
+                
+            if not address: 
+                address = None
+                
             profile_serializer = ProfileSerializer(profile)
-            address_serializer = AddressSerializer(address)
+            address_serializer = AddressSerializer(address) if address else None
             
-            full_address = f"{address.street}, {address.city}, {address.state} {address.zip_code}"
+            full_address = ''
+            if address: 
+                full_address = f"{address.street}, {address.city}, {address.state} {address.zip_code}"
             
-            geocode_result = gmaps.geocode(full_address)
-            if geocode_result:
-                latitude = geocode_result[0]['geometry']['location']['lat']
-                longitude = geocode_result[0]['geometry']['location']['lng']
-                print(f"Latitude: {latitude}, Longitude: {longitude}")
+            latitude = longitude = None
+            if full_address:
+                geocode_result = gmaps.geocode(full_address)
+                if geocode_result:
+                    latitude = geocode_result[0]['geometry']['location']['lat'] if geocode_result else None
+                    longitude = geocode_result[0]['geometry']['location']['lng'] if geocode_result else None
+                    print(f"Latitude: {latitude}, Longitude: {longitude}")
+                    
+            coordinates = {
+                "latitude": latitude, 
+                "longitude": longitude
+            }
                 
             return Response({
                 "profile": profile_serializer.data,
-                "address": address_serializer.data,
-                "coordinates": {
-                    "latitude": latitude,
-                    "longitude": longitude
-                }
+                "address": address_serializer.data if address else {},
+                "coordinates": coordinates
             }, status=HTTP_200_OK)
+            
         except Profile.DoesNotExist:
             return Response({"error": "Profile not found"}, status=HTTP_404_NOT_FOUND)
     
@@ -104,7 +115,9 @@ class ProfileView(APIView):
         print(f"Authenticated user: {request.user}")  # Debug statement
         try:
             profile = Profile.objects.get(pk=pk, user=request.user)
-            address = Address.objects.get(pk=profile.address.pk, user=request.user)
+            address = Address.objects.filter(pk=profile.address.pk, user=request.user).first()
+            if not address:
+                address = None
         except Profile.DoesNotExist:
             return Response({"error": "Profile not found"}, status=HTTP_404_NOT_FOUND)
     
@@ -154,16 +167,15 @@ class ProfileView(APIView):
         }, status=HTTP_400_BAD_REQUEST)
         
         
-class UserInfo(APIView): 
-    def get(self, request, *args, **kwargs):
-        try:
-            # Attempt to retrieve the profile for the authenticated user
-            profile = Profile.objects.get(user=request.user)
-            return Response({
-                "birth_date": profile.birth_date,
-                "address": profile.address,
-                # Add other fields you need from the profile
-            })
-        except Profile.DoesNotExist:
-            # If the profile doesn't exist, return a 404 response
-            return Response({"error": "Profile not found."}, status=HTTP_404_NOT_FOUND)
+# class UserInfo(APIView): 
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             # Attempt to retrieve the profile for the authenticated user
+#             profile = Profile.objects.get(user=request.user)
+#             return Response({
+#                 "birth_date": profile.birth_date,
+#                 "address": profile.address,
+#             })
+#         except Profile.DoesNotExist:
+#             # If the profile doesn't exist, return a 404 response
+#             return Response({"error": "Profile not found."}, status=HTTP_404_NOT_FOUND)

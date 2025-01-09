@@ -142,9 +142,8 @@ const ProfileCard = () => {
         } catch (error) {
           console.error('Error parsing user data from localStorage:', error);
         }
-          } else {
+      } else {
         const userInfo = await getInfo();
-        console.log(await getInfo());
         console.log("getInfo user data:", userInfo)
         if (userInfo) {
           const { first_name, last_name, email, birth_date, address, bio } = userInfo;
@@ -168,10 +167,20 @@ const ProfileCard = () => {
       getUserData();
   }, [formData.email]);
 
+  useEffect(() => {
+    if (formData.address && (!formData.address.street || !formData.address.city || !formData.address.state || !formData.address.zip_code)) {
+      console.log("Address is incomplete. Prompt the user to add it.");
+    }
+  }, [formData]);
+
+
+
+
 
   useEffect(() => {
     console.log(formData);
   }, [formData]);
+
 
 
   return ( 

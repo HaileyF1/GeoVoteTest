@@ -78,27 +78,35 @@ export const logOut = async(user) => {
 export const getInfo = async() => {
   let token = localStorage.getItem('token');
   if (!token) {
+    console.log('Token not found in localStorage')
     return null;
   }
 
   api.defaults.headers.common['Authorization'] = `Token ${token}`;
 
   try {
-    const [userResponse, profileResponse] = await Promise.all([
-      api.get("users/info/"),
-      api.get("profile/info/"),
-    ]);
-
-    if (userResponse.status === 200 && profileResponse.status === 200) {
-      const combinedData = {
-        ...userResponse.data,
-        profile: profileResponse.data,
-      };
-      return combinedData;
-    }
-    return null;
+    const userResponse = await api.get('users/info/');
+    const userData = userResponse.data;
+      try {
+        const profileResponse = await api.get("profile/");
+        return {
+          ...userData, 
+          profile: profileResponse.data,
+        };
+      } catch (profileErr) {
+        console.error('Profile fetch error:', profileErr.response?.status, profileErr.message);
+        
+        if (profileErr.response?.status === 500) {
+          console.warn("Server error fetching profile. Address may not exist.");
+          return{
+            ...userData,
+            profile: null,
+          };
+        }
+        throw profileErr;
+      }
   } catch (err) {
-    console.err('err fetching user info:', err.message);
+    console.error('err fetching user info:', err.message);
     if (err.response && err.response.status === 401) {
       localStorage.removeItem('token');
     }
